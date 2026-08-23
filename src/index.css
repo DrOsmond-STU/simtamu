@@ -1,0 +1,50 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+/*
+ * Token warna & radius disamakan dengan identitas visual aplikasi lain di
+ * bawah PT Semesta Teknologi Utama (ERP Enterprise, FLMS), supaya SIMTAMU
+ * terasa satu keluarga: biru korporat #1b4bd6, kanvas abu kebiruan, sidebar
+ * navy gelap, dan radius 8/12/16px.
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --color-brand-50: #eef4ff;
+  --color-brand-100: #dbe6ff;
+  --color-brand-200: #bcd0ff;
+  --color-brand-300: #8fb0ff;
+  --color-brand-400: #5c86fb;
+  --color-brand-500: #3563e9;
+  --color-brand-600: #1b4bd6;
+  --color-brand-700: #163bad;
+  --color-brand-800: #16338a;
+  --color-brand-900: #172e6e;
+
+  --color-canvas: #f5f7fb;
+  --color-sidebar: #101a2e;
+  --color-sidebar-elevated: #16223b;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    @apply bg-canvas text-slate-700 font-sans antialiased;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: theme(--color-slate-300);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}
