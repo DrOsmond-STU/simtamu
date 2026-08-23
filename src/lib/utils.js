@@ -103,14 +103,20 @@ const AVATAR_PALETTE = [
   'bg-teal-100 text-teal-700',
 ]
 
-export function getAvatarColor(seed) {
+// Hash string sederhana untuk memetakan teks (nama, unit, dsb.) ke indeks
+// warna secara konsisten — dipakai untuk warna avatar maupun warna blok
+// unit pada kalender agenda.
+export function hashSeed(seed) {
   let hash = 0
   for (let i = 0; i < seed.length; i++) {
     hash = (hash << 5) - hash + seed.charCodeAt(i)
     hash |= 0
   }
-  const idx = Math.abs(hash) % AVATAR_PALETTE.length
-  return AVATAR_PALETTE[idx]
+  return Math.abs(hash)
+}
+
+export function getAvatarColor(seed) {
+  return AVATAR_PALETTE[hashSeed(seed) % AVATAR_PALETTE.length]
 }
 
 export function formatFileSize(bytes) {

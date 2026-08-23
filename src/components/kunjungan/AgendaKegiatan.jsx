@@ -1,28 +1,52 @@
 import { useMemo, useState } from 'react'
-import { CalendarRange } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useKunjungan } from '../../context/KunjunganContext'
 import { STATUS, STATUS_CONFIG } from '../../lib/status'
-import { addDays, cn, formatTime, toDateKey } from '../../lib/utils'
+import { addDays, cn, formatDateWeekday, formatTime, hashSeed, toDateKey } from '../../lib/utils'
 
 // Status yang dianggap benar-benar bagian dari kepadatan agenda hari itu.
 // Ditolak/dibatalkan tidak dihitung karena slotnya sudah tidak terpakai.
 const STATUS_AKTIF = [STATUS.MENUNGGU, STATUS.DISETUJUI, STATUS.BERLANGSUNG, STATUS.SELESAI]
 
-const HARI_LABEL = new Intl.DateTimeFormat('id-ID', { weekday: 'short' })
-const TANGGAL_LABEL = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short' })
+const HARI_HEADER = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab']
+const BULAN_TAHUN = new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric' })
 
-function densityLevel(count) {
-  if (count === 0) return { label: 'Kosong', dot: 'bg-slate-300', text: 'text-slate-400' }
-  if (count <= 2) return { label: 'Lengang', dot: 'bg-green-500', text: 'text-green-700' }
-  if (count <= 4) return { label: 'Sedang', dot: 'bg-amber-500', text: 'text-amber-700' }
-  return { label: 'Padat', dot: 'bg-red-500', text: 'text-red-700' }
+// Warna blok per unit/bagian — konsisten untuk unit yang sama di seluruh
+// kalender, dipilih otomatis dari nama unit (bukan warna acak per render).
+const UNIT_PALETTE = [
+  '#2563eb', // biru
+  '#0d9488', // teal
+  '#16a34a', // hijau
+  '#d97706', // amber
+  '#dc2626', // merah
+  '#7c3aed', // ungu
+  '#0891b2', // sian
+  '#475569', // slate
+]
+function unitColor(unit) {
+  return UNIT_PALETTE[hashSeed(unit) % UNIT_PALETTE.length]
 }
 
-// Agenda kegiatan lintas-unit yang tampil di beranda publik, SEBELUM tamu
-// mulai mengisi formulir — memberi gambaran kepadatan secara global (semua
-// pejabat/unit sekaligus) agar tamu bisa memperkirakan waktu yang lebih
-// lengang sebelum memutuskan tanggal kunjungan. Sengaja tidak menyebutkan
-// nama tamu maupun pejabat yang terlibat — hanya jam, lokasi, dan status.
+function startOfMonth(date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1)
+}
+
+// Grid kalender selalu berupa kelipatan minggu penuh (mulai hari Minggu)
+// yang mencakup seluruh tanggal pada bulan yang ditampilkan.
+function buildGridDays(monthDate) {
+  const first = startOfMonth(monthDate)
+  const start = addDays(first, -first.getDay())
+  const lastOfMonth = new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0)
+  const totalWeeks = Math.ceil((Math.round((lastOfMonth - start) / 86400000) + 1) / 7)
+  return Array.from({ length: totalWeeks * 7 }, (_, i) => addDays(start, i))
+}
+
+// Kalender agenda kegiatan lintas-unit yang tampil di beranda publik,
+// SEBELUM tamu mulai mengisi formulir — memberi gambaran kepadatan secara
+// global (dikelompokkan per unit/bagian, bukan per orang) agar tamu dapat
+// memperkirakan waktu yang lebih lengang sebelum memutuskan tanggal
+// kunjungan. Sengaja tidak menyebutkan nama tamu maupun pejabat yang
+// terlibat — hanya unit, jumlah kunjungan, jam, lokasi, dan status.
 export default function AgendaKegiatan() {
   const { data } = useKunjungan()
 
@@ -31,76 +55,173 @@ export default function AgendaKegiatan() {
     d.setHours(0, 0, 0, 0)
     return d
   }, [])
-  const days = useMemo(() => Array.from({ length: 7 }, (_, i) => addDays(today, i)), [today])
-  const [selected, setSelected] = useState(1) // default: besok, tanggal terdekat yang bisa diajukan
+  const [viewDate, setViewDate] = useState(today)
+  const [selected, setSelected] = useState(today)
 
-  const byDay = useMemo(
-    () =>
-      days.map((day) => {
-        const key = toDateKey(day)
-        const items = data
-          .filter((k) => toDateKey(k.mulai) === key && STATUS_AKTIF.includes(k.status))
-          .sort((a, b) => a.mulai - b.mulai)
-        return { day, key, items }
-      }),
-    [days, data],
-  )
+  const gridDays = useMemo(() => buildGridDays(viewDate), [viewDate])
+  const currentMonth = viewDate.getMonth()
 
-  const activeDay = byDay[selected]
+  // Kelompokkan kunjungan aktif per tanggal, lalu per unit pejabat yang dituju.
+  const perTanggal = useMemo(() => {
+    const map = new Map()
+    for (const k of data) {
+      if (!STATUS_AKTIF.includes(k.status)) continue
+      const key = toDateKey(k.mulai)
+      if (!map.has(key)) map.set(key, [])
+      map.get(key).push(k)
+    }
+    return map
+  }, [data])
+
+  function unitGroups(dateKey) {
+    const items = perTanggal.get(dateKey) || []
+    const byUnit = new Map()
+    for (const k of items) {
+      const unit = k.pejabat.unit
+      byUnit.set(unit, (byUnit.get(unit) || 0) + 1)
+    }
+    return Array.from(byUnit, ([unit, jumlah]) => ({ unit, jumlah }))
+  }
+
+  const selectedKey = toDateKey(selected)
+  const selectedDalamBulanIni = selected.getMonth() === currentMonth && selected.getFullYear() === viewDate.getFullYear()
+  const selectedItems = selectedDalamBulanIni
+    ? (perTanggal.get(selectedKey) || []).slice().sort((a, b) => a.mulai - b.mulai)
+    : []
+
+  function gotoMonth(delta) {
+    setViewDate((d) => new Date(d.getFullYear(), d.getMonth() + delta, 1))
+  }
+  function gotoToday() {
+    setViewDate(today)
+    setSelected(today)
+  }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="flex items-center gap-2">
-        <CalendarRange className="h-4 w-4 text-brand-600" />
+    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div>
         <h3 className="text-sm font-semibold text-slate-900">Agenda Kegiatan</h3>
+        <p className="mt-1 text-xs leading-relaxed text-slate-500">
+          Gambaran kepadatan kunjungan per unit di seluruh instansi, agar Anda dapat
+          memperkirakan waktu yang lebih lengang sebelum mengajukan. Demi menjaga privasi,
+          agenda ini tidak menampilkan nama tamu maupun pejabat yang terlibat.
+        </p>
       </div>
-      <p className="mt-1 text-xs leading-relaxed text-slate-500">
-        Gambaran kepadatan kunjungan di seluruh unit selama 7 hari ke depan, agar Anda dapat
-        memperkirakan waktu yang lebih lengang sebelum mengajukan. Demi menjaga privasi, agenda
-        ini tidak menampilkan nama tamu maupun pejabat yang terlibat.
-      </p>
 
-      <div className="scrollbar-thin mt-4 flex gap-2 overflow-x-auto pb-1">
-        {byDay.map((d, i) => {
-          const dens = densityLevel(d.items.length)
-          const active = i === selected
+      <div className="mt-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => gotoMonth(-1)}
+            aria-label="Bulan sebelumnya"
+            className="rounded-md border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => gotoMonth(1)}
+            aria-label="Bulan berikutnya"
+            className="rounded-md border border-slate-200 p-1.5 text-slate-500 hover:bg-slate-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={gotoToday}
+            className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50"
+          >
+            Hari ini
+          </button>
+        </div>
+        <p className="text-sm font-semibold capitalize text-slate-800">
+          {BULAN_TAHUN.format(viewDate)}
+        </p>
+      </div>
+
+      <div className="mt-3 grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-slate-200 bg-slate-200 text-center">
+        {HARI_HEADER.map((h) => (
+          <div key={h} className="bg-slate-50 py-1.5 text-[11px] font-semibold text-slate-500">
+            {h}
+          </div>
+        ))}
+        {gridDays.map((day) => {
+          const key = toDateKey(day)
+          const groups = unitGroups(key)
+          const luarBulan = day.getMonth() !== currentMonth
+          const isToday = key === toDateKey(today)
+          const isSelected = key === selectedKey
+          const visible = groups.slice(0, 2)
+          const sisa = groups.length - visible.length
+
           return (
             <button
-              key={d.key}
+              key={key}
               type="button"
-              onClick={() => setSelected(i)}
+              onClick={() => setSelected(day)}
               className={cn(
-                'flex shrink-0 flex-col items-center gap-1 rounded-lg border px-3 py-2 text-xs transition-colors',
-                active ? 'border-brand-600 bg-brand-50' : 'border-slate-200 hover:bg-slate-50',
+                'flex min-h-[76px] flex-col items-stretch gap-0.5 bg-white p-1 text-left align-top transition-colors sm:min-h-[92px] sm:p-1.5',
+                luarBulan && 'bg-slate-50/60',
+                isSelected && 'ring-2 ring-inset ring-brand-500',
               )}
             >
-              <span className={cn('font-medium', active ? 'text-brand-700' : 'text-slate-600')}>
-                {i === 0 ? 'Hari ini' : HARI_LABEL.format(d.day)}
+              <span
+                className={cn(
+                  'self-start rounded-full px-1.5 text-[11px] font-medium',
+                  luarBulan ? 'text-slate-300' : 'text-slate-600',
+                  isToday && 'bg-brand-600 text-white',
+                )}
+              >
+                {day.getDate()}
               </span>
-              <span className="text-slate-400">{TANGGAL_LABEL.format(d.day)}</span>
-              <span className={cn('flex items-center gap-1 text-[11px]', dens.text)}>
-                <span className={cn('h-1.5 w-1.5 rounded-full', dens.dot)} />
-                {dens.label}
-              </span>
+              <div className="space-y-0.5">
+                {visible.map((g) => (
+                  <div
+                    key={g.unit}
+                    className="truncate rounded px-1 py-0.5 text-[9.5px] font-medium leading-tight text-white sm:text-[10px]"
+                    style={{ backgroundColor: unitColor(g.unit) }}
+                    title={`${g.unit} — ${g.jumlah} kunjungan`}
+                  >
+                    {g.unit} &middot; {g.jumlah}
+                  </div>
+                ))}
+                {sisa > 0 && <div className="px-1 text-[9.5px] text-slate-400">+{sisa} lainnya</div>}
+              </div>
             </button>
           )
         })}
       </div>
 
-      <div className="mt-4">
-        {activeDay.items.length === 0 ? (
-          <p className="text-sm text-green-700">
+      <div className="mt-4 border-t border-slate-100 pt-4">
+        {selectedDalamBulanIni ? (
+          <p className="text-xs font-semibold text-slate-700">{formatDateWeekday(selected)}</p>
+        ) : (
+          <p className="text-xs font-semibold text-slate-700">Pilih tanggal</p>
+        )}
+        {!selectedDalamBulanIni ? (
+          <p className="mt-2 text-sm text-slate-500">
+            Klik salah satu tanggal pada kalender di atas untuk melihat detail kegiatan.
+          </p>
+        ) : selectedItems.length === 0 ? (
+          <p className="mt-2 text-sm text-green-700">
             Tidak ada kegiatan terjadwal pada tanggal ini &mdash; jadwal lengang sepanjang hari.
           </p>
         ) : (
-          <ul className="space-y-1.5">
-            {activeDay.items.map((k) => (
+          <ul className="mt-2 space-y-1.5">
+            {selectedItems.map((k) => (
               <li
                 key={k.id}
-                className="flex items-center gap-2.5 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600"
+                className="flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600"
               >
                 <span className="font-medium text-slate-700">
                   {formatTime(k.mulai)}&ndash;{formatTime(k.selesai)}
+                </span>
+                <span className="text-slate-300">&middot;</span>
+                <span
+                  className="rounded px-1.5 py-0.5 text-[11px] font-medium text-white"
+                  style={{ backgroundColor: unitColor(k.pejabat.unit) }}
+                >
+                  {k.pejabat.unit}
                 </span>
                 <span className="text-slate-300">&middot;</span>
                 <span className="truncate">{k.lokasi}</span>
