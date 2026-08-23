@@ -2,6 +2,10 @@
 # bukan file/direktori nyata diarahkan ke index.html agar navigasi langsung
 # ke rute seperti /portal atau /kunjungan/:id tidak menghasilkan 404.
 
+# Deklarasi eksplisit — jaring pengaman jika konfigurasi vhost server belum
+# menunjuk index.html sebagai DirectoryIndex bawaan.
+DirectoryIndex index.html
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
