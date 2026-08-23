@@ -9,6 +9,7 @@ import Field, { inputClass, inputErrorClass } from '../../components/ui/Field'
 import Button from '../../components/ui/Button'
 import Stepper from '../../components/ui/Stepper'
 import FileDropzone from '../../components/ui/FileDropzone'
+import AvailabilityPanel from '../../components/kunjungan/AvailabilityPanel'
 
 const STEPS = ['Data Diri', 'Jadwal Kunjungan', 'Surat Kunjungan', 'Tinjau & Kirim']
 const MIN_DATE = toDateKey(addDays(new Date(), 1))
@@ -300,6 +301,14 @@ export default function PortalForm() {
                 </Field>
               </div>
             </div>
+
+            <AvailabilityPanel
+              pejabat={pejabatTerpilih}
+              tanggal={form.tanggal}
+              jamMulai={form.jamMulai}
+              jamSelesai={form.jamSelesai}
+            />
+
             <p className="rounded-lg bg-brand-50 px-3.5 py-3 text-xs leading-relaxed text-brand-700">
               Jadwal yang Anda usulkan akan ditinjau oleh petugas. Lokasi/ruangan kunjungan akan
               ditentukan saat pengajuan disetujui.
