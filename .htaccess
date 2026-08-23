@@ -1,0 +1,31 @@
+# SIMTAMU adalah Single Page Application (React Router). Semua path yang
+# bukan file/direktori nyata diarahkan ke index.html agar navigasi langsung
+# ke rute seperti /portal atau /kunjungan/:id tidak menghasilkan 404.
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Jangan alihkan permintaan ke file atau direktori yang benar-benar ada.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Cache aset yang sudah punya hash pada nama filenya (assets/index-XXXX.js/css)
+# secara agresif; index.html tidak di-cache agar rilis baru langsung terlihat.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>
