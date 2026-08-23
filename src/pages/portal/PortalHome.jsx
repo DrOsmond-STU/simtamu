@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { CalendarCheck, FileUp, Search, Send, UserPen } from 'lucide-react'
+import AgendaKegiatan from '../../components/kunjungan/AgendaKegiatan'
 
 const LANGKAH = [
   {
@@ -58,6 +59,8 @@ export default function PortalHome() {
           </Link>
         </div>
       </div>
+
+      <AgendaKegiatan />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {LANGKAH.map((l) => (
