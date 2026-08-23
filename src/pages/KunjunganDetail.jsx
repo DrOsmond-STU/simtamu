@@ -5,45 +5,26 @@ import {
   Building2,
   Calendar,
   Check,
+  FileText,
   Mail,
   MapPin,
   Pencil,
   Phone,
   Ticket,
+  UserRound,
   Users,
   X,
 } from 'lucide-react'
 import { useKunjungan } from '../context/KunjunganContext'
+import { SUMBER } from '../lib/dummyData'
 import { STATUS, STATUS_CONFIG } from '../lib/status'
-import { formatDate, formatDateTime, formatTime } from '../lib/utils'
+import { cn, formatDate, formatDateTime, formatFileSize, formatTime } from '../lib/utils'
 import StatusBadge from '../components/ui/StatusBadge'
 import Avatar from '../components/ui/Avatar'
 import Button from '../components/ui/Button'
 import ConfirmDialog from '../components/ui/ConfirmDialog'
 import EmptyState from '../components/ui/EmptyState'
-import { cn } from '../lib/utils'
-
-const FLOW = [STATUS.MENUNGGU, STATUS.DISETUJUI, STATUS.BERLANGSUNG, STATUS.SELESAI]
-
-function buildTimeline(status) {
-  if (status === STATUS.DITOLAK) {
-    return [
-      { key: STATUS.MENUNGGU, state: 'done' },
-      { key: STATUS.DITOLAK, state: 'current' },
-    ]
-  }
-  if (status === STATUS.DIBATALKAN) {
-    return [
-      { key: STATUS.MENUNGGU, state: 'done' },
-      { key: STATUS.DIBATALKAN, state: 'current' },
-    ]
-  }
-  const idx = FLOW.indexOf(status)
-  return FLOW.map((key, i) => ({
-    key,
-    state: i < idx ? 'done' : i === idx ? 'current' : 'upcoming',
-  }))
-}
+import StatusTimeline from '../components/kunjungan/StatusTimeline'
 
 function InfoRow({ icon: Icon, label, value }) {
   return (
@@ -83,7 +64,6 @@ export default function KunjunganDetail() {
     )
   }
 
-  const timeline = buildTimeline(record.status)
   const isFinal = [STATUS.SELESAI, STATUS.DITOLAK, STATUS.DIBATALKAN].includes(record.status)
 
   function closeDialog() {
@@ -124,15 +104,21 @@ export default function KunjunganDetail() {
               <p className="text-sm text-slate-500">
                 {record.jabatanTamu} &middot; {record.instansi}
               </p>
-              <p className="mt-1 text-xs font-medium tracking-wide text-slate-400">{record.id}</p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                <p className="text-xs font-medium tracking-wide text-slate-400">{record.id}</p>
+                {record.sumber === SUMBER.MANDIRI && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-600 ring-1 ring-inset ring-violet-200">
+                    <UserRound className="h-3 w-3" />
+                    Pengajuan Mandiri via Portal Tamu
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-          <Link to={`/kunjungan/${record.id}/edit`}>
-            <Button variant="secondary" size="sm">
-              <Pencil className="h-3.5 w-3.5" />
-              Edit Data
-            </Button>
-          </Link>
+          <Button as={Link} to={`/kunjungan/${record.id}/edit`} variant="secondary" size="sm">
+            <Pencil className="h-3.5 w-3.5" />
+            Edit Data
+          </Button>
         </div>
       </div>
 
@@ -142,6 +128,40 @@ export default function KunjunganDetail() {
             <h3 className="text-sm font-semibold text-slate-900">Tujuan Kunjungan</h3>
             <p className="mt-2 text-sm font-medium text-slate-700">{record.tujuan}</p>
             <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{record.keterangan}</p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="mb-3 text-sm font-semibold text-slate-900">Surat Kunjungan</h3>
+            {record.suratKunjungan ? (
+              <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                  <FileText className="h-5 w-5" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-slate-800">
+                    {record.suratKunjungan.name}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    {formatFileSize(record.suratKunjungan.size)} &middot; diunggah oleh tamu
+                  </p>
+                </div>
+                <a
+                  href={record.suratKunjungan.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Lihat Surat
+                </a>
+              </div>
+            ) : (
+              <p className="rounded-lg bg-slate-50 px-3.5 py-3 text-xs leading-relaxed text-slate-500">
+                Belum ada surat yang diunggah untuk kunjungan ini
+                {record.sumber === SUMBER.PETUGAS
+                  ? ' karena didaftarkan langsung oleh petugas.'
+                  : '.'}
+              </p>
+            )}
           </div>
 
           {record.catatanPetugas && isFinal && (
@@ -193,51 +213,7 @@ export default function KunjunganDetail() {
         <div className="space-y-5">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="mb-4 text-sm font-semibold text-slate-900">Status Kunjungan</h3>
-            <ol className="space-y-0">
-              {timeline.map((step, idx) => {
-                const config = STATUS_CONFIG[step.key]
-                const isLast = idx === timeline.length - 1
-                return (
-                  <li key={step.key} className="relative flex gap-3 pb-6 last:pb-0">
-                    {!isLast && (
-                      <span
-                        className={cn(
-                          'absolute left-[11px] top-6 h-full w-px',
-                          step.state === 'done' ? 'bg-emerald-300' : 'bg-slate-200',
-                        )}
-                      />
-                    )}
-                    <span
-                      className={cn(
-                        'relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
-                        step.state === 'done' && 'bg-emerald-500 text-white',
-                        step.state === 'current' && `${config.dot} text-white ring-4 ring-slate-100`,
-                        step.state === 'upcoming' && 'bg-white text-slate-300 ring-2 ring-slate-200',
-                      )}
-                    >
-                      {step.state === 'done' ? (
-                        <Check className="h-3.5 w-3.5" />
-                      ) : (
-                        <span className="h-1.5 w-1.5 rounded-full bg-current" />
-                      )}
-                    </span>
-                    <div className="pt-0.5">
-                      <p
-                        className={cn(
-                          'text-sm font-medium',
-                          step.state === 'upcoming' ? 'text-slate-400' : 'text-slate-800',
-                        )}
-                      >
-                        {config.label}
-                      </p>
-                      {step.state === 'current' && (
-                        <p className="text-xs text-slate-400">Status saat ini</p>
-                      )}
-                    </div>
-                  </li>
-                )
-              })}
-            </ol>
+            <StatusTimeline status={record.status} />
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">

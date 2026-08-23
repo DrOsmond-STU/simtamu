@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Save, Ticket, X } from 'lucide-react'
 import { useKunjungan } from '../context/KunjunganContext'
-import { LOKASI_LIST, PEJABAT, TUJUAN_OPTIONS } from '../lib/dummyData'
+import { LOKASI_LIST, PEJABAT, SUMBER, TUJUAN_OPTIONS } from '../lib/dummyData'
 import { STATUS } from '../lib/status'
 import { cn, combineDateTime, toDateKey, toTimeInputValue } from '../lib/utils'
 import Field, { inputClass, inputErrorClass } from '../components/ui/Field'
@@ -44,8 +44,6 @@ function recordToForm(record) {
     jamSelesai: toTimeInputValue(record.selesai),
   }
 }
-
-let localSequence = 1000
 
 export default function KunjunganForm() {
   const { id } = useParams()
@@ -124,15 +122,14 @@ export default function KunjunganForm() {
       updateKunjungan(existing.id, shared)
       navigate(`/kunjungan/${existing.id}`)
     } else {
-      localSequence += 1
-      const record = {
-        id: `KJG-2026-${String(localSequence).padStart(4, '0')}`,
+      const record = addKunjungan({
         ...shared,
         status: STATUS.MENUNGGU,
         catatanPetugas: '',
         dibuatPada: new Date(),
-      }
-      addKunjungan(record)
+        sumber: SUMBER.PETUGAS,
+        suratKunjungan: null,
+      })
       navigate(`/kunjungan/${record.id}`)
     }
   }

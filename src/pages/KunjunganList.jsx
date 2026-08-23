@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Plus, Search, SlidersHorizontal, Users2 } from 'lucide-react'
-import { PEJABAT } from '../lib/dummyData'
+import { PEJABAT, SUMBER } from '../lib/dummyData'
 import { useKunjungan } from '../context/KunjunganContext'
 import { STATUS_CONFIG, STATUS_ORDER } from '../lib/status'
 import { cn, formatDate, formatTime } from '../lib/utils'
@@ -160,7 +160,17 @@ export default function KunjunganList() {
                       <div className="flex items-center gap-3">
                         <Avatar name={k.nama} size="sm" />
                         <div className="min-w-0">
-                          <p className="truncate font-medium text-slate-800">{k.nama}</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="truncate font-medium text-slate-800">{k.nama}</p>
+                            {k.sumber === SUMBER.MANDIRI && (
+                              <span
+                                title="Pengajuan mandiri via Portal Tamu"
+                                className="inline-flex shrink-0 items-center rounded-full bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium text-violet-600 ring-1 ring-inset ring-violet-200"
+                              >
+                                Mandiri
+                              </span>
+                            )}
+                          </div>
                           <p className="truncate text-xs text-slate-400">{k.instansi}</p>
                         </div>
                       </div>

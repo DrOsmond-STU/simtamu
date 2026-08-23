@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { CalendarDays, LayoutDashboard, Users2, X } from 'lucide-react'
+import { CalendarDays, ExternalLink, LayoutDashboard, Users2, X } from 'lucide-react'
 import { cn } from '../../lib/utils'
 
 const NAV_ITEMS = [
@@ -68,6 +68,19 @@ export default function Sidebar({ open, onClose }) {
             </NavLink>
           ))}
         </nav>
+
+        <div className="px-3 pb-1">
+          <a
+            href="/portal"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900"
+          >
+            <ExternalLink className="h-[18px] w-[18px]" strokeWidth={2} />
+            <span className="flex-1">Portal Tamu</span>
+          </a>
+          <p className="px-3 pb-2 text-xs text-slate-400">Halaman pengajuan mandiri untuk tamu</p>
+        </div>
 
         <div className="border-t border-slate-100 p-4">
           <div className="flex items-center gap-3 rounded-lg bg-slate-50 px-3 py-2.5">

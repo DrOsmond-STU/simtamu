@@ -2,7 +2,7 @@
 // Tanggal dihitung relatif terhadap hari ini agar tampilan dashboard & agenda
 // selalu terlihat "hidup" kapan pun prototipe ini dibuka.
 
-import { addDays } from './utils'
+import { addDays, slugify } from './utils'
 import { STATUS } from './status'
 
 const today = new Date()
@@ -12,6 +12,43 @@ function atTime(dayOffset, hour, minute = 0) {
   const d = addDays(today, dayOffset)
   d.setHours(hour, minute, 0, 0)
   return d
+}
+
+// Menghasilkan gambar surat permohonan sederhana sebagai data URI, dipakai
+// sebagai contoh lampiran "Surat Kunjungan" pada beberapa data dummy yang
+// berasal dari pengajuan mandiri tamu (lihat SUMBER.MANDIRI di bawah).
+function placeholderSurat(nama, instansi) {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="620" height="820" viewBox="0 0 620 820">
+    <rect width="620" height="820" fill="#ffffff" />
+    <rect x="16" y="16" width="588" height="788" fill="none" stroke="#cbd5e1" stroke-width="2" />
+    <text x="310" y="90" font-family="Arial, sans-serif" font-size="22" font-weight="700" text-anchor="middle" fill="#0f172a">SURAT PERMOHONAN KUNJUNGAN</text>
+    <line x1="140" y1="106" x2="480" y2="106" stroke="#0f172a" stroke-width="1.5" />
+    <text x="80" y="180" font-family="Arial, sans-serif" font-size="15" fill="#334155">Yang bertanda tangan di bawah ini:</text>
+    <text x="80" y="220" font-family="Arial, sans-serif" font-size="15" fill="#334155">Nama&#160;&#160;&#160;&#160;&#160;&#160;: ${nama}</text>
+    <text x="80" y="250" font-family="Arial, sans-serif" font-size="15" fill="#334155">Instansi&#160;&#160;: ${instansi}</text>
+    <text x="80" y="310" font-family="Arial, sans-serif" font-size="15" fill="#334155">Dengan ini mengajukan permohonan kunjungan resmi</text>
+    <text x="80" y="336" font-family="Arial, sans-serif" font-size="15" fill="#334155">sesuai jadwal yang telah diajukan melalui Portal Tamu</text>
+    <text x="80" y="362" font-family="Arial, sans-serif" font-size="15" fill="#334155">SIMTAMU. Atas perhatian dan kerja samanya, kami</text>
+    <text x="80" y="388" font-family="Arial, sans-serif" font-size="15" fill="#334155">ucapkan terima kasih.</text>
+    <text x="480" y="520" font-family="Arial, sans-serif" font-size="14" fill="#334155" text-anchor="middle">Hormat kami,</text>
+    <text x="480" y="610" font-family="Arial, sans-serif" font-size="14" fill="#334155" text-anchor="middle">( ${nama} )</text>
+    <text x="310" y="770" font-family="Arial, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle">Dokumen contoh (data dummy) &#8212; SIMTAMU</text>
+  </svg>`
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`
+}
+
+function buildSurat(nama, instansi) {
+  return {
+    name: `surat-kunjungan-${slugify(nama)}.svg`,
+    size: 31 * 1024,
+    type: 'image/svg+xml',
+    url: placeholderSurat(nama, instansi),
+  }
+}
+
+export const SUMBER = {
+  MANDIRI: 'mandiri',
+  PETUGAS: 'petugas',
 }
 
 export const PEJABAT = [
@@ -56,6 +93,8 @@ function kunjungan({
   status,
   catatanPetugas = '',
   dibuatSebelum = 2,
+  sumber = SUMBER.PETUGAS,
+  bersurat = false,
 }) {
   seq += 1
   const mulai = atTime(hari, jamMulai[0], jamMulai[1])
@@ -77,6 +116,8 @@ function kunjungan({
     status,
     catatanPetugas,
     dibuatPada: atTime(hari - dibuatSebelum, 8, 30),
+    sumber,
+    suratKunjungan: bersurat ? buildSurat(nama, instansi) : null,
   }
 }
 
@@ -321,6 +362,8 @@ export const KUNJUNGAN = [
     jamSelesai: [10, 0],
     status: STATUS.MENUNGGU,
     dibuatSebelum: 1,
+    sumber: SUMBER.MANDIRI,
+    bersurat: true,
   }),
   kunjungan({
     nama: 'Dedi Kurniawan',
@@ -372,6 +415,8 @@ export const KUNJUNGAN = [
     jamSelesai: [14, 0],
     status: STATUS.MENUNGGU,
     dibuatSebelum: 1,
+    sumber: SUMBER.MANDIRI,
+    bersurat: true,
   }),
   kunjungan({
     nama: 'Agung Wibisono',
@@ -474,6 +519,8 @@ export const KUNJUNGAN = [
     jamSelesai: [14, 0],
     status: STATUS.MENUNGGU,
     dibuatSebelum: 2,
+    sumber: SUMBER.MANDIRI,
+    bersurat: true,
   }),
   kunjungan({
     nama: 'Diah Ayu Lestari',
