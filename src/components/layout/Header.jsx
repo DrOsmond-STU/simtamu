@@ -1,13 +1,26 @@
 import { useLocation } from 'react-router-dom'
-import { Bell, Menu, Search } from 'lucide-react'
+import { Menu, Search } from 'lucide-react'
+import NotificationBell from './NotificationBell'
 
 function getPageMeta(pathname) {
-  if (pathname === '/') return { title: 'Dashboard', subtitle: 'Ringkasan aktivitas kunjungan tamu' }
-  if (pathname === '/kunjungan') return { title: 'Kunjungan', subtitle: 'Kelola pendaftaran dan status kunjungan tamu' }
-  if (pathname === '/kunjungan/baru') return { title: 'Daftarkan Kunjungan', subtitle: 'Formulir pendaftaran kunjungan baru' }
-  if (pathname.endsWith('/edit')) return { title: 'Ubah Kunjungan', subtitle: 'Perbarui data kunjungan tamu' }
-  if (pathname.startsWith('/kunjungan/')) return { title: 'Detail Kunjungan', subtitle: 'Informasi lengkap kunjungan tamu' }
-  if (pathname === '/agenda') return { title: 'Agenda', subtitle: 'Jadwal kunjungan dalam tampilan kalender' }
+  if (pathname === '/petugas/dashboard') {
+    return { title: 'Dashboard', subtitle: 'Ringkasan aktivitas kunjungan tamu' }
+  }
+  if (pathname === '/petugas/kunjungan') {
+    return { title: 'Kunjungan', subtitle: 'Kelola pendaftaran dan status kunjungan tamu' }
+  }
+  if (pathname === '/petugas/kunjungan/baru') {
+    return { title: 'Daftarkan Kunjungan', subtitle: 'Formulir pendaftaran kunjungan baru' }
+  }
+  if (pathname.endsWith('/edit')) {
+    return { title: 'Ubah Kunjungan', subtitle: 'Perbarui data kunjungan tamu' }
+  }
+  if (pathname.startsWith('/petugas/kunjungan/')) {
+    return { title: 'Detail Kunjungan', subtitle: 'Informasi lengkap kunjungan tamu' }
+  }
+  if (pathname === '/petugas/agenda') {
+    return { title: 'Agenda', subtitle: 'Jadwal kunjungan dalam tampilan kalender' }
+  }
   return { title: 'SIMTAMU', subtitle: '' }
 }
 
@@ -38,18 +51,11 @@ export default function Header({ onOpenSidebar }) {
         <input
           type="text"
           placeholder="Cari nama tamu, instansi, kode..."
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
       </div>
 
-      <button
-        type="button"
-        className="relative rounded-full p-2 text-slate-500 hover:bg-slate-100"
-        aria-label="Notifikasi"
-      >
-        <Bell className="h-5 w-5" />
-        <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
-      </button>
+      <NotificationBell />
 
       <div className="hidden items-center gap-2.5 border-l border-slate-200 pl-4 sm:flex">
         <span className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-xs font-semibold text-slate-600">

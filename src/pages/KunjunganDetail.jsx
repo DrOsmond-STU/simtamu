@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
+  Bell,
   Building2,
   Calendar,
   Check,
@@ -18,6 +19,7 @@ import {
 import { useKunjungan } from '../context/KunjunganContext'
 import { SUMBER } from '../lib/dummyData'
 import { STATUS, STATUS_CONFIG } from '../lib/status'
+import { CHANNEL_LABEL } from '../lib/notifikasi'
 import { cn, formatDate, formatDateTime, formatFileSize, formatTime } from '../lib/utils'
 import StatusBadge from '../components/ui/StatusBadge'
 import Avatar from '../components/ui/Avatar'
@@ -43,8 +45,11 @@ function InfoRow({ icon: Icon, label, value }) {
 export default function KunjunganDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { data, updateStatus } = useKunjungan()
+  const { data, notifikasi, updateStatus } = useKunjungan()
   const record = data.find((k) => k.id === id)
+  const riwayatNotifikasi = notifikasi
+    .filter((n) => n.kunjunganId === id)
+    .sort((a, b) => b.waktu - a.waktu)
 
   const [dialog, setDialog] = useState(null)
   const [alasan, setAlasan] = useState('')
@@ -56,7 +61,7 @@ export default function KunjunganDetail() {
         title="Kunjungan tidak ditemukan"
         description={`Data dengan kode "${id}" tidak tersedia atau sudah dihapus.`}
         action={
-          <Link to="/kunjungan" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+          <Link to="/petugas/kunjungan" className="text-sm font-medium text-brand-600 hover:text-brand-700">
             &larr; Kembali ke daftar kunjungan
           </Link>
         }
@@ -85,7 +90,7 @@ export default function KunjunganDetail() {
     <div className="space-y-5">
       <button
         type="button"
-        onClick={() => navigate('/kunjungan')}
+        onClick={() => navigate('/petugas/kunjungan')}
         className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -115,7 +120,7 @@ export default function KunjunganDetail() {
               </div>
             </div>
           </div>
-          <Button as={Link} to={`/kunjungan/${record.id}/edit`} variant="secondary" size="sm">
+          <Button as={Link} to={`/petugas/kunjungan/${record.id}/edit`} variant="secondary" size="sm">
             <Pencil className="h-3.5 w-3.5" />
             Edit Data
           </Button>
@@ -134,7 +139,7 @@ export default function KunjunganDetail() {
             <h3 className="mb-3 text-sm font-semibold text-slate-900">Surat Kunjungan</h3>
             {record.suratKunjungan ? (
               <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-600">
                   <FileText className="h-5 w-5" />
                 </span>
                 <div className="min-w-0 flex-1">
@@ -149,7 +154,7 @@ export default function KunjunganDetail() {
                   href={record.suratKunjungan.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="shrink-0 text-xs font-medium text-blue-600 hover:text-blue-700"
+                  className="shrink-0 text-xs font-medium text-brand-600 hover:text-brand-700"
                 >
                   Lihat Surat
                 </a>
@@ -169,7 +174,7 @@ export default function KunjunganDetail() {
               className={cn(
                 'rounded-xl border p-5 text-sm',
                 record.status === STATUS.DITOLAK
-                  ? 'border-rose-200 bg-rose-50 text-rose-700'
+                  ? 'border-red-200 bg-red-50 text-red-700'
                   : 'border-slate-200 bg-slate-50 text-slate-600',
               )}
             >
@@ -207,6 +212,38 @@ export default function KunjunganDetail() {
               <InfoRow icon={Mail} label="Email" value={record.email} />
               <InfoRow icon={Ticket} label="Terdaftar Pada" value={formatDateTime(record.dibuatPada)} />
             </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="mb-1 text-sm font-semibold text-slate-900">Riwayat Notifikasi</h3>
+            <p className="mb-3 text-xs text-slate-400">
+              Pemberitahuan yang terkirim ke tamu dan pejabat/unit tujuan sepanjang sesi ini.
+            </p>
+            {riwayatNotifikasi.length === 0 ? (
+              <p className="rounded-lg bg-slate-50 px-3.5 py-3 text-xs leading-relaxed text-slate-500">
+                Belum ada notifikasi terkirim untuk kunjungan ini pada sesi ini.
+              </p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {riwayatNotifikasi.map((n) => (
+                  <li key={n.id} className="flex items-start gap-3 py-2.5">
+                    <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-400">
+                      <Bell className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-slate-700">
+                        Ke <span className="font-medium text-slate-900">{n.targetNama}</span>
+                        <span className="text-slate-400"> &middot; {n.target === 'tamu' ? 'Tamu' : 'Pejabat Tujuan'}</span>
+                      </p>
+                      <p className="text-xs text-slate-500">{n.pesan}</p>
+                      <p className="mt-1 text-[11px] text-slate-400">
+                        {formatDateTime(n.waktu)} &middot; via {CHANNEL_LABEL[n.channel]}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
@@ -284,7 +321,7 @@ export default function KunjunganDetail() {
           onChange={(e) => setAlasan(e.target.value)}
           rows={3}
           placeholder="Contoh: Jadwal bentrok dengan agenda pimpinan"
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
       </ConfirmDialog>
 
@@ -302,7 +339,7 @@ export default function KunjunganDetail() {
           onChange={(e) => setAlasan(e.target.value)}
           rows={3}
           placeholder="Contoh: Tamu berhalangan hadir"
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
       </ConfirmDialog>
     </div>

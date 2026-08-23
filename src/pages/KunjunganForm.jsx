@@ -65,7 +65,7 @@ export default function KunjunganForm() {
         title="Kunjungan tidak ditemukan"
         description={`Data dengan kode "${id}" tidak tersedia atau sudah dihapus.`}
         action={
-          <Link to="/kunjungan" className="text-sm font-medium text-blue-600 hover:text-blue-700">
+          <Link to="/petugas/kunjungan" className="text-sm font-medium text-brand-600 hover:text-brand-700">
             &larr; Kembali ke daftar kunjungan
           </Link>
         }
@@ -120,7 +120,7 @@ export default function KunjunganForm() {
 
     if (isEdit) {
       updateKunjungan(existing.id, shared)
-      navigate(`/kunjungan/${existing.id}`)
+      navigate(`/petugas/kunjungan/${existing.id}`)
     } else {
       const record = addKunjungan({
         ...shared,
@@ -130,7 +130,7 @@ export default function KunjunganForm() {
         sumber: SUMBER.PETUGAS,
         suratKunjungan: null,
       })
-      navigate(`/kunjungan/${record.id}`)
+      navigate(`/petugas/kunjungan/${record.id}`)
     }
   }
 

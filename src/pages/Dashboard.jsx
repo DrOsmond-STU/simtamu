@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Bar,
@@ -25,6 +26,26 @@ today.setHours(0, 0, 0, 0)
 
 export default function Dashboard() {
   const { data: KUNJUNGAN } = useKunjungan()
+  // Recharts' ResponsiveContainer mengukur lebar/tinggi lewat ResizeObserver
+  // pada saat mount. Setelah navigasi client-side (bukan reload penuh), ia
+  // kadang mengukur sebelum layout Sidebar+Header selesai settle, sehingga
+  // grafik tetap kosong sampai ada resize lain. Menunda pemasangan grafik
+  // satu frame (requestAnimationFrame) memastikan container sudah punya
+  // ukuran akhir yang benar saat ResponsiveContainer mulai mengamati.
+  const [chartsReady, setChartsReady] = useState(false)
+  useEffect(() => {
+    // Dua rAF berantai: rAF pertama masih terjadwal SEBELUM paint berikutnya;
+    // baru di rAF kedua kita benar-benar tahu satu siklus paint sudah lewat
+    // dan layout sudah settle.
+    let inner
+    const outer = requestAnimationFrame(() => {
+      inner = requestAnimationFrame(() => setChartsReady(true))
+    })
+    return () => {
+      cancelAnimationFrame(outer)
+      if (inner) cancelAnimationFrame(inner)
+    }
+  }, [])
   const kunjunganHariIni = KUNJUNGAN.filter((k) => isSameDay(k.mulai, today)).sort(
     (a, b) => a.mulai - b.mulai,
   )
@@ -84,36 +105,40 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="h-64 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={trendData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="#eef2f7" />
-                <XAxis
-                  dataKey="tanggal"
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
-                  axisLine={{ stroke: '#e2e8f0' }}
-                  tickLine={false}
-                  interval={1}
-                />
-                <YAxis
-                  allowDecimals={false}
-                  tick={{ fontSize: 11, fill: '#94a3b8' }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={28}
-                />
-                <Tooltip
-                  cursor={{ fill: '#f1f5f9' }}
-                  contentStyle={{
-                    borderRadius: 8,
-                    borderColor: '#e2e8f0',
-                    fontSize: 12,
-                  }}
-                  labelStyle={{ color: '#0f172a', fontWeight: 600 }}
-                  formatter={(value) => [`${value} kunjungan`, '']}
-                />
-                <Bar dataKey="jumlah" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={28} />
-              </BarChart>
-            </ResponsiveContainer>
+            {chartsReady ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={trendData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                  <CartesianGrid vertical={false} stroke="#eef2f7" />
+                  <XAxis
+                    dataKey="tanggal"
+                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                    axisLine={{ stroke: '#e2e8f0' }}
+                    tickLine={false}
+                    interval={1}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fontSize: 11, fill: '#94a3b8' }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={28}
+                  />
+                  <Tooltip
+                    cursor={{ fill: '#f1f5f9' }}
+                    contentStyle={{
+                      borderRadius: 8,
+                      borderColor: '#e2e8f0',
+                      fontSize: 12,
+                    }}
+                    labelStyle={{ color: '#0f172a', fontWeight: 600 }}
+                    formatter={(value) => [`${value} kunjungan`, '']}
+                  />
+                  <Bar dataKey="jumlah" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full animate-pulse rounded-lg bg-slate-100" />
+            )}
           </div>
         </div>
 
@@ -121,27 +146,31 @@ export default function Dashboard() {
           <h3 className="mb-1 text-sm font-semibold text-slate-900">Distribusi Status</h3>
           <p className="mb-2 text-xs text-slate-400">Seluruh data kunjungan tercatat</p>
           <div className="h-40 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={statusData}
-                  dataKey="value"
-                  nameKey="label"
-                  innerRadius={42}
-                  outerRadius={64}
-                  paddingAngle={2}
-                  strokeWidth={0}
-                >
-                  {statusData.map((entry) => (
-                    <Cell key={entry.status} fill={STATUS_CONFIG[entry.status].hex} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 12 }}
-                  formatter={(value, _name, item) => [`${value} kunjungan`, item.payload.label]}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+            {chartsReady ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={statusData}
+                    dataKey="value"
+                    nameKey="label"
+                    innerRadius={42}
+                    outerRadius={64}
+                    paddingAngle={2}
+                    strokeWidth={0}
+                  >
+                    {statusData.map((entry) => (
+                      <Cell key={entry.status} fill={STATUS_CONFIG[entry.status].hex} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{ borderRadius: 8, borderColor: '#e2e8f0', fontSize: 12 }}
+                    formatter={(value, _name, item) => [`${value} kunjungan`, item.payload.label]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full w-full animate-pulse rounded-lg bg-slate-100" />
+            )}
           </div>
           <ul className="mt-2 space-y-2">
             {statusData.map((item) => (
@@ -164,7 +193,7 @@ export default function Dashboard() {
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
             <h3 className="text-sm font-semibold text-slate-900">Jadwal Hari Ini</h3>
-            <Link to="/agenda" className="text-xs font-medium text-blue-600 hover:text-blue-700">
+            <Link to="/petugas/agenda" className="text-xs font-medium text-brand-600 hover:text-brand-700">
               Lihat agenda &rarr;
             </Link>
           </div>
@@ -181,7 +210,7 @@ export default function Dashboard() {
             {kunjunganHariIni.slice(0, 5).map((k) => (
               <Link
                 key={k.id}
-                to={`/kunjungan/${k.id}`}
+                to={`/petugas/kunjungan/${k.id}`}
                 className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-slate-50"
               >
                 <Avatar name={k.nama} size="sm" />
@@ -201,8 +230,8 @@ export default function Dashboard() {
           <div className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
             <h3 className="text-sm font-semibold text-slate-900">Menunggu Konfirmasi</h3>
             <Link
-              to="/kunjungan?status=menunggu"
-              className="text-xs font-medium text-blue-600 hover:text-blue-700"
+              to="/petugas/kunjungan?status=menunggu"
+              className="text-xs font-medium text-brand-600 hover:text-brand-700"
             >
               Lihat semua &rarr;
             </Link>
@@ -220,7 +249,7 @@ export default function Dashboard() {
             {menunggu.slice(0, 5).map((k) => (
               <Link
                 key={k.id}
-                to={`/kunjungan/${k.id}`}
+                to={`/petugas/kunjungan/${k.id}`}
                 className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-slate-50"
               >
                 <Avatar name={k.nama} size="sm" />
@@ -230,16 +259,16 @@ export default function Dashboard() {
                     {formatDateShort(k.mulai)}, {formatTime(k.mulai)} &middot; {k.instansi}
                   </p>
                 </div>
-                <span className="hidden shrink-0 text-xs font-medium text-blue-600 sm:block">Tinjau</span>
+                <span className="hidden shrink-0 text-xs font-medium text-brand-600 sm:block">Tinjau</span>
               </Link>
             ))}
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-blue-200 bg-blue-50/50 px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-brand-200 bg-brand-50/50 px-5 py-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+          <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-100 text-brand-600">
             <CalendarPlus className="h-5 w-5" />
           </span>
           <div>
@@ -248,8 +277,8 @@ export default function Dashboard() {
           </div>
         </div>
         <Link
-          to="/kunjungan/baru"
-          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+          to="/petugas/kunjungan/baru"
+          className="inline-flex items-center justify-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-brand-700"
         >
           Daftarkan Kunjungan
         </Link>

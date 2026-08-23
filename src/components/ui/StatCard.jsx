@@ -2,10 +2,10 @@ import { cn } from '../../lib/utils'
 
 export default function StatCard({ label, value, icon: Icon, tone = 'blue', trend }) {
   const tones = {
-    blue: 'bg-blue-50 text-blue-600',
+    blue: 'bg-brand-50 text-brand-600',
     amber: 'bg-amber-50 text-amber-600',
     violet: 'bg-violet-50 text-violet-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
+    emerald: 'bg-green-50 text-green-600',
   }
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -24,7 +24,7 @@ export default function StatCard({ label, value, icon: Icon, tone = 'blue', tren
         <p
           className={cn(
             'mt-3 flex items-center gap-1 text-xs font-medium',
-            trend.direction === 'up' ? 'text-emerald-600' : 'text-slate-500',
+            trend.direction === 'up' ? 'text-green-600' : 'text-slate-500',
           )}
         >
           {trend.label}

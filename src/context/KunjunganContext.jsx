@@ -1,11 +1,14 @@
 import { createContext, useContext, useMemo, useRef, useState } from 'react'
 import { KUNJUNGAN as INITIAL_KUNJUNGAN } from '../lib/dummyData'
+import { notifikasiPengajuanBaru, notifikasiPerubahanStatus } from '../lib/notifikasi'
 
 // Penyimpanan data kunjungan di memori (bukan backend sungguhan).
 // Cukup untuk mendemonstrasikan alur UI/UX secara utuh: menambah,
 // menyetujui, menolak, hingga menyelesaikan kunjungan — baik yang
 // didaftarkan petugas maupun yang diajukan mandiri oleh tamu lewat
-// Portal Tamu.
+// Portal Tamu. Setiap peristiwa juga menghasilkan entri notifikasi
+// (lihat src/lib/notifikasi.js) sehingga jejak "tamu & pejabat diberi
+// tahu" terlihat di lonceng notifikasi petugas maupun riwayat kunjungan.
 
 const KunjunganContext = createContext(null)
 
@@ -18,16 +21,24 @@ function initialSequence() {
 
 export function KunjunganProvider({ children }) {
   const [data, setData] = useState(INITIAL_KUNJUNGAN)
+  const [notifikasi, setNotifikasi] = useState([])
   const seqRef = useRef(initialSequence())
 
   const actions = useMemo(
     () => ({
       updateStatus(id, status, catatanPetugas) {
+        let updated = null
         setData((prev) =>
-          prev.map((k) =>
-            k.id === id ? { ...k, status, catatanPetugas: catatanPetugas ?? k.catatanPetugas } : k,
-          ),
+          prev.map((k) => {
+            if (k.id !== id) return k
+            updated = { ...k, status, catatanPetugas: catatanPetugas ?? k.catatanPetugas }
+            return updated
+          }),
         )
+        if (updated) {
+          const entries = notifikasiPerubahanStatus(updated, status, catatanPetugas)
+          if (entries.length) setNotifikasi((prev) => [...entries, ...prev])
+        }
       },
       updateKunjungan(id, patch) {
         setData((prev) => prev.map((k) => (k.id === id ? { ...k, ...patch } : k)))
@@ -39,13 +50,20 @@ export function KunjunganProvider({ children }) {
         seqRef.current += 1
         const record = { ...partialRecord, id: `KJG-2026-${String(seqRef.current).padStart(4, '0')}` }
         setData((prev) => [record, ...prev])
+        setNotifikasi((prev) => [...notifikasiPengajuanBaru(record), ...prev])
         return record
+      },
+      tandaiNotifikasiTerbaca() {
+        setNotifikasi((prev) => prev.map((n) => ({ ...n, dibaca: true })))
       },
     }),
     [],
   )
 
-  const value = useMemo(() => ({ data, ...actions }), [data, actions])
+  const value = useMemo(
+    () => ({ data, notifikasi, ...actions }),
+    [data, notifikasi, actions],
+  )
 
   return <KunjunganContext.Provider value={value}>{children}</KunjunganContext.Provider>
 }

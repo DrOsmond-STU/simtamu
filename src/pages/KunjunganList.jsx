@@ -65,8 +65,8 @@ export default function KunjunganList() {
           <p className="text-sm text-slate-500">{filtered.length} kunjungan ditemukan</p>
         </div>
         <Link
-          to="/kunjungan/baru"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+          to="/petugas/kunjungan/baru"
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-brand-700"
         >
           <Plus className="h-4 w-4" />
           Daftarkan Kunjungan
@@ -82,7 +82,7 @@ export default function KunjunganList() {
             className={cn(
               'flex shrink-0 items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors',
               status === chip.key
-                ? 'border-blue-600 bg-blue-600 text-white'
+                ? 'border-brand-600 bg-brand-600 text-white'
                 : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50',
             )}
           >
@@ -110,7 +110,7 @@ export default function KunjunganList() {
               setPage(1)
             }}
             placeholder="Cari nama tamu, instansi, atau kode kunjungan..."
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-100"
           />
         </div>
         <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ export default function KunjunganList() {
               setUnit(e.target.value)
               setPage(1)
             }}
-            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 sm:w-56"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 focus:border-brand-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-100 sm:w-56"
           >
             <option value="semua">Semua Unit Tujuan</option>
             {PEJABAT.map((p) => (
@@ -191,8 +191,8 @@ export default function KunjunganList() {
                     </td>
                     <td className="px-5 py-3.5 text-right">
                       <Link
-                        to={`/kunjungan/${k.id}`}
-                        className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                        to={`/petugas/kunjungan/${k.id}`}
+                        className="text-xs font-medium text-brand-600 hover:text-brand-700"
                       >
                         Lihat Detail
                       </Link>

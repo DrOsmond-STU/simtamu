@@ -64,8 +64,8 @@ export default function Agenda() {
           <p className="text-sm text-slate-500">Lihat jadwal kunjungan dalam tampilan kalender bulanan</p>
         </div>
         <Link
-          to={`/kunjungan/baru?tanggal=${toDateKey(selectedDate)}`}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-blue-700"
+          to={`/petugas/kunjungan/baru?tanggal=${toDateKey(selectedDate)}`}
+          className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-brand-700"
         >
           <Plus className="h-4 w-4" />
           Daftarkan Kunjungan
@@ -126,7 +126,7 @@ export default function Agenda() {
                   className={cn(
                     'flex min-h-[84px] flex-col items-start gap-1 rounded-lg border p-1.5 text-left transition-colors sm:min-h-[96px] sm:p-2',
                     isSelected
-                      ? 'border-blue-400 bg-blue-50'
+                      ? 'border-brand-400 bg-brand-50'
                       : 'border-transparent hover:border-slate-200 hover:bg-slate-50',
                     !inMonth && 'opacity-40',
                   )}
@@ -134,7 +134,7 @@ export default function Agenda() {
                   <span
                     className={cn(
                       'flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium',
-                      isToday ? 'bg-blue-600 text-white' : 'text-slate-600',
+                      isToday ? 'bg-brand-600 text-white' : 'text-slate-600',
                     )}
                   >
                     {day.getDate()}
@@ -191,8 +191,8 @@ export default function Agenda() {
                   description="Tidak ada kunjungan terjadwal pada tanggal ini."
                   action={
                     <Link
-                      to={`/kunjungan/baru?tanggal=${toDateKey(selectedDate)}`}
-                      className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                      to={`/petugas/kunjungan/baru?tanggal=${toDateKey(selectedDate)}`}
+                      className="text-sm font-medium text-brand-600 hover:text-brand-700"
                     >
                       + Daftarkan kunjungan pada tanggal ini
                     </Link>
@@ -203,7 +203,7 @@ export default function Agenda() {
             {selectedEvents.map((ev) => (
               <Link
                 key={ev.id}
-                to={`/kunjungan/${ev.id}`}
+                to={`/petugas/kunjungan/${ev.id}`}
                 className="flex items-start gap-3 px-5 py-3.5 transition-colors hover:bg-slate-50"
               >
                 <Avatar name={ev.nama} size="sm" />

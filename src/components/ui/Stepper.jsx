@@ -14,8 +14,8 @@ export default function Stepper({ steps, current }) {
               <span
                 className={cn(
                   'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors',
-                  state === 'done' && 'bg-blue-600 text-white',
-                  state === 'current' && 'bg-blue-600 text-white ring-4 ring-blue-100',
+                  state === 'done' && 'bg-brand-600 text-white',
+                  state === 'current' && 'bg-brand-600 text-white ring-4 ring-brand-100',
                   state === 'upcoming' && 'bg-slate-100 text-slate-400',
                 )}
               >
@@ -34,7 +34,7 @@ export default function Stepper({ steps, current }) {
               <span
                 className={cn(
                   'mx-2 h-0.5 flex-1 translate-y-[-14px] transition-colors sm:translate-y-0',
-                  state === 'done' ? 'bg-blue-600' : 'bg-slate-200',
+                  state === 'done' ? 'bg-brand-600' : 'bg-slate-200',
                 )}
               />
             )}

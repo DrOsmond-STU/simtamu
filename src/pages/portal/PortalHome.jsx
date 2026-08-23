@@ -30,7 +30,7 @@ export default function PortalHome() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <span className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+        <span className="inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700">
           Layanan Mandiri untuk Tamu
         </span>
         <h1 className="mt-4 text-2xl font-semibold text-slate-900 sm:text-3xl">
@@ -43,14 +43,14 @@ export default function PortalHome() {
         </p>
         <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <Link
-            to="/portal/ajukan"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-blue-700 sm:w-auto"
+            to="/ajukan"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 py-3 text-sm font-medium text-white shadow-sm hover:bg-brand-700 sm:w-auto"
           >
             <Send className="h-4 w-4" />
             Ajukan Kunjungan Sekarang
           </Link>
           <Link
-            to="/portal/status"
+            to="/status"
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:w-auto"
           >
             <Search className="h-4 w-4" />
@@ -62,7 +62,7 @@ export default function PortalHome() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {LANGKAH.map((l) => (
           <div key={l.title} className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+            <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
               <l.icon className="h-5 w-5" />
             </span>
             <h3 className="mt-3 text-sm font-semibold text-slate-900">{l.title}</h3>

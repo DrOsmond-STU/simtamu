@@ -1,4 +1,7 @@
 // Definisi status alur kunjungan tamu, dari pendaftaran sampai selesai.
+// Warna semantik (amber/green/red) disamakan dengan token --amber-500,
+// --green-500, --red-500 yang dipakai aplikasi lain di lingkungan
+// PT Semesta Teknologi Utama (ERP Enterprise, FLMS).
 
 export const STATUS = {
   MENUNGGU: 'menunggu',
@@ -15,14 +18,14 @@ export const STATUS_CONFIG = {
     badge: 'bg-amber-50 text-amber-700 ring-amber-600/20',
     dot: 'bg-amber-500',
     bar: 'bg-amber-500',
-    hex: '#f59e0b',
+    hex: '#d97706',
   },
   [STATUS.DISETUJUI]: {
     label: 'Terjadwal',
-    badge: 'bg-blue-50 text-blue-700 ring-blue-600/20',
-    dot: 'bg-blue-500',
-    bar: 'bg-blue-500',
-    hex: '#3b82f6',
+    badge: 'bg-brand-50 text-brand-700 ring-brand-600/20',
+    dot: 'bg-brand-600',
+    bar: 'bg-brand-600',
+    hex: '#1b4bd6',
   },
   [STATUS.BERLANGSUNG]: {
     label: 'Sedang Berlangsung',
@@ -33,17 +36,17 @@ export const STATUS_CONFIG = {
   },
   [STATUS.SELESAI]: {
     label: 'Selesai',
-    badge: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
-    dot: 'bg-emerald-500',
-    bar: 'bg-emerald-500',
-    hex: '#10b981',
+    badge: 'bg-green-50 text-green-700 ring-green-600/20',
+    dot: 'bg-green-600',
+    bar: 'bg-green-600',
+    hex: '#16a34a',
   },
   [STATUS.DITOLAK]: {
     label: 'Ditolak',
-    badge: 'bg-rose-50 text-rose-700 ring-rose-600/20',
-    dot: 'bg-rose-500',
-    bar: 'bg-rose-500',
-    hex: '#f43f5e',
+    badge: 'bg-red-50 text-red-700 ring-red-600/20',
+    dot: 'bg-red-600',
+    bar: 'bg-red-600',
+    hex: '#dc2626',
   },
   [STATUS.DIBATALKAN]: {
     label: 'Dibatalkan',

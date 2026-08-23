@@ -36,7 +36,7 @@ export default function FileDropzone({ file, onChange, error }) {
   if (file) {
     return (
       <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-100 text-brand-600">
           <FileText className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
@@ -72,8 +72,8 @@ export default function FileDropzone({ file, onChange, error }) {
         }}
         className={cn(
           'flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors',
-          dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100',
-          shownError && 'border-rose-300 bg-rose-50',
+          dragOver ? 'border-brand-400 bg-brand-50' : 'border-slate-300 bg-slate-50 hover:bg-slate-100',
+          shownError && 'border-red-300 bg-red-50',
         )}
       >
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-slate-400 shadow-sm">
@@ -89,7 +89,7 @@ export default function FileDropzone({ file, onChange, error }) {
           onChange={(e) => validateAndSet(e.target.files?.[0])}
         />
       </div>
-      {shownError && <p className="mt-1.5 text-xs text-rose-600">{shownError}</p>}
+      {shownError && <p className="mt-1.5 text-xs text-red-600">{shownError}</p>}
     </div>
   )
 }

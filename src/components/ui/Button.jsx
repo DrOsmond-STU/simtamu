@@ -1,12 +1,12 @@
 import { cn } from '../../lib/utils'
 
 const VARIANTS = {
-  primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:outline-blue-600 shadow-sm',
+  primary: 'bg-brand-600 text-white hover:bg-brand-700 focus-visible:outline-brand-600 shadow-sm',
   secondary:
-    'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus-visible:outline-blue-600',
-  ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:outline-blue-600',
-  danger: 'bg-white text-rose-600 ring-1 ring-inset ring-rose-200 hover:bg-rose-50 focus-visible:outline-rose-600',
-  success: 'bg-emerald-600 text-white hover:bg-emerald-700 focus-visible:outline-emerald-600 shadow-sm',
+    'bg-white text-slate-700 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus-visible:outline-brand-600',
+  ghost: 'text-slate-600 hover:bg-slate-100 focus-visible:outline-brand-600',
+  danger: 'bg-white text-red-600 ring-1 ring-inset ring-red-200 hover:bg-red-50 focus-visible:outline-red-600',
+  success: 'bg-green-600 text-white hover:bg-green-700 focus-visible:outline-green-600 shadow-sm',
 }
 
 const SIZES = {

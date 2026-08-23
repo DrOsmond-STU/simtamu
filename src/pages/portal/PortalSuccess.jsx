@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Check, CheckCircle2, Copy, Search, Send } from 'lucide-react'
+import { BellRing, Check, CheckCircle2, Copy, Search, Send } from 'lucide-react'
 import { useKunjungan } from '../../context/KunjunganContext'
 import { formatDate, formatTime } from '../../lib/utils'
 import StatusBadge from '../../components/ui/StatusBadge'
@@ -9,8 +9,9 @@ import EmptyState from '../../components/ui/EmptyState'
 
 export default function PortalSuccess() {
   const { id } = useParams()
-  const { data } = useKunjungan()
+  const { data, notifikasi } = useKunjungan()
   const record = data.find((k) => k.id === id)
+  const notifikasiTerkirim = notifikasi.filter((n) => n.kunjunganId === id)
   const [copied, setCopied] = useState(false)
 
   async function handleCopy() {
@@ -31,8 +32,8 @@ export default function PortalSuccess() {
         description="Data pengajuan mungkin sudah tidak tersedia pada sesi ini. Silakan ajukan kembali."
         action={
           <Link
-            to="/portal/ajukan"
-            className="text-sm font-medium text-blue-600 hover:text-blue-700"
+            to="/ajukan"
+            className="text-sm font-medium text-brand-600 hover:text-brand-700"
           >
             &larr; Buat pengajuan baru
           </Link>
@@ -43,7 +44,7 @@ export default function PortalSuccess() {
 
   return (
     <div className="space-y-6 text-center">
-      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
+      <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
         <CheckCircle2 className="h-9 w-9" />
       </span>
       <div>
@@ -54,22 +55,22 @@ export default function PortalSuccess() {
         </p>
       </div>
 
-      <div className="mx-auto max-w-sm rounded-xl border border-dashed border-blue-300 bg-blue-50 p-5">
-        <p className="text-xs font-medium uppercase tracking-wide text-blue-500">
+      <div className="mx-auto max-w-sm rounded-xl border border-dashed border-brand-300 bg-brand-50 p-5">
+        <p className="text-xs font-medium uppercase tracking-wide text-brand-500">
           Kode Pengajuan Anda
         </p>
         <div className="mt-1.5 flex items-center justify-center gap-2">
-          <p className="text-2xl font-bold tracking-wide text-blue-700">{record.id}</p>
+          <p className="text-2xl font-bold tracking-wide text-brand-700">{record.id}</p>
           <button
             type="button"
             onClick={handleCopy}
-            className="rounded-md p-1.5 text-blue-500 hover:bg-blue-100"
+            className="rounded-md p-1.5 text-brand-500 hover:bg-brand-100"
             aria-label="Salin kode pengajuan"
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
           </button>
         </div>
-        <p className="mt-1 text-xs text-blue-500">
+        <p className="mt-1 text-xs text-brand-500">
           {copied ? 'Kode disalin ke clipboard' : 'Simpan kode ini untuk mengecek status pengajuan'}
         </p>
       </div>
@@ -97,16 +98,33 @@ export default function PortalSuccess() {
         </div>
       </div>
 
-      <p className="text-xs leading-relaxed text-slate-400">
-        Anda akan dihubungi melalui telepon atau email setelah petugas memproses pengajuan ini.
-      </p>
+      <div className="rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm">
+        <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-900">
+          <BellRing className="h-4 w-4 text-brand-600" />
+          Notifikasi Terkirim
+        </h2>
+        <ul className="space-y-2.5">
+          {notifikasiTerkirim.map((n) => (
+            <li key={n.id} className="flex items-start gap-2 text-xs text-slate-600">
+              <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-green-500" />
+              <span>
+                Ke <span className="font-medium text-slate-800">{n.targetNama}</span>{' '}
+                ({n.target === 'tamu' ? 'Anda' : 'Pejabat Tujuan'}): {n.pesan}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-[11px] text-slate-400">
+          Anda akan dihubungi melalui telepon atau email setelah petugas memproses pengajuan ini.
+        </p>
+      </div>
 
       <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-        <Button as={Link} to={`/portal/status?kode=${record.id}`} variant="secondary">
+        <Button as={Link} to={`/status?kode=${record.id}`} variant="secondary">
           <Search className="h-4 w-4" />
           Cek Status Pengajuan
         </Button>
-        <Button as={Link} to="/portal/ajukan" variant="primary">
+        <Button as={Link} to="/ajukan" variant="primary">
           <Send className="h-4 w-4" />
           Ajukan Kunjungan Lain
         </Button>

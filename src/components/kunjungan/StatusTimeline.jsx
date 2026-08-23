@@ -38,14 +38,14 @@ export default function StatusTimeline({ status }) {
               <span
                 className={cn(
                   'absolute left-[11px] top-6 h-full w-px',
-                  step.state === 'done' ? 'bg-emerald-300' : 'bg-slate-200',
+                  step.state === 'done' ? 'bg-green-300' : 'bg-slate-200',
                 )}
               />
             )}
             <span
               className={cn(
                 'relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
-                step.state === 'done' && 'bg-emerald-500 text-white',
+                step.state === 'done' && 'bg-green-500 text-white',
                 step.state === 'current' && `${config.dot} text-white ring-4 ring-slate-100`,
                 step.state === 'upcoming' && 'bg-white text-slate-300 ring-2 ring-slate-200',
               )}

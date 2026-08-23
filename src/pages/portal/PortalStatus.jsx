@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search } from 'lucide-react'
+import { BellRing, Search } from 'lucide-react'
 import { useKunjungan } from '../../context/KunjunganContext'
 import { STATUS } from '../../lib/status'
 import { formatDate, formatTime } from '../../lib/utils'
@@ -15,7 +15,7 @@ function normalizePhone(value) {
 
 export default function PortalStatus() {
   const [searchParams] = useSearchParams()
-  const { data } = useKunjungan()
+  const { data, notifikasi } = useKunjungan()
   const [query, setQuery] = useState(searchParams.get('kode') || '')
   const [results, setResults] = useState(null)
 
@@ -63,7 +63,7 @@ export default function PortalStatus() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Kode pengajuan atau nomor telepon"
-          className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className="w-full rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-700 placeholder:text-slate-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
         <Button type="submit" variant="primary">
           <Search className="h-4 w-4" />
@@ -119,7 +119,7 @@ export default function PortalStatus() {
               </div>
 
               {record.catatanPetugas && [STATUS.DITOLAK, STATUS.DIBATALKAN].includes(record.status) && (
-                <p className="mt-3 rounded-lg bg-rose-50 px-3.5 py-3 text-xs text-rose-700">
+                <p className="mt-3 rounded-lg bg-red-50 px-3.5 py-3 text-xs text-red-700">
                   <span className="font-semibold">Catatan petugas:</span> {record.catatanPetugas}
                 </p>
               )}
@@ -127,6 +127,28 @@ export default function PortalStatus() {
               <div className="mt-5 border-t border-slate-100 pt-5">
                 <StatusTimeline status={record.status} />
               </div>
+
+              {(() => {
+                const punya = notifikasi.filter(
+                  (n) => n.kunjunganId === record.id && n.target === 'tamu',
+                )
+                if (punya.length === 0) return null
+                return (
+                  <div className="mt-5 border-t border-slate-100 pt-5">
+                    <h3 className="mb-2.5 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+                      <BellRing className="h-3.5 w-3.5" />
+                      Notifikasi untuk Anda
+                    </h3>
+                    <ul className="space-y-2">
+                      {punya.map((n) => (
+                        <li key={n.id} className="text-xs text-slate-600">
+                          {n.pesan}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )
+              })()}
             </div>
           ))}
         </div>
@@ -134,7 +156,7 @@ export default function PortalStatus() {
 
       <p className="text-center text-sm text-slate-400">
         Belum pernah mengajukan?{' '}
-        <Link to="/portal/ajukan" className="font-medium text-blue-600 hover:text-blue-700">
+        <Link to="/ajukan" className="font-medium text-brand-600 hover:text-brand-700">
           Ajukan kunjungan baru
         </Link>
       </p>

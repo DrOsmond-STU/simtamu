@@ -119,7 +119,7 @@ export default function PortalForm() {
       },
     })
 
-    navigate(`/portal/sukses/${record.id}`)
+    navigate(`/sukses/${record.id}`)
   }
 
   const pejabatTerpilih = PEJABAT.find((p) => p.id === form.pejabatId)
@@ -300,7 +300,7 @@ export default function PortalForm() {
                 </Field>
               </div>
             </div>
-            <p className="rounded-lg bg-blue-50 px-3.5 py-3 text-xs leading-relaxed text-blue-700">
+            <p className="rounded-lg bg-brand-50 px-3.5 py-3 text-xs leading-relaxed text-brand-700">
               Jadwal yang Anda usulkan akan ditinjau oleh petugas. Lokasi/ruangan kunjungan akan
               ditentukan saat pengajuan disetujui.
             </p>
@@ -374,13 +374,13 @@ export default function PortalForm() {
                   setSetuju(e.target.checked)
                   setErrors((prev) => ({ ...prev, setuju: undefined }))
                 }}
-                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-brand-600 focus:ring-brand-500"
               />
               Saya menyatakan bahwa data yang saya isi di atas benar dan dapat
               dipertanggungjawabkan.
             </label>
-            {errors.setuju && <p className="text-xs text-rose-600">{errors.setuju}</p>}
-            {errors.file && <p className="text-xs text-rose-600">{errors.file}</p>}
+            {errors.setuju && <p className="text-xs text-red-600">{errors.setuju}</p>}
+            {errors.file && <p className="text-xs text-red-600">{errors.file}</p>}
           </div>
         )}
       </div>
